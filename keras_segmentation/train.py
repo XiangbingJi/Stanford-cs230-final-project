@@ -6,6 +6,7 @@ from .models import model_from_name
 import tensorflow as tf
 import os
 import six
+import pickle
 
 def find_latest_checkpoint( checkpoints_path ):
 	ep = 0
@@ -121,7 +122,7 @@ def train( model  ,
 	if not validate:
 		for ep in range( epochs ):
 			print("Starting Epoch " , ep )
-			model.fit_generator( train_gen , steps_per_epoch  , epochs=1 )
+			history = model.fit_generator( train_gen , steps_per_epoch  , epochs=1 )
 			if not checkpoints_path is None:
 				model.save_weights( checkpoints_path + "." + str( ep ) )
 				print("saved " , checkpoints_path + ".model." + str( ep ) )
@@ -129,12 +130,15 @@ def train( model  ,
 	else:
 		for ep in range( epochs ):
 			print("Starting Epoch " , ep )
-			model.fit_generator( train_gen , steps_per_epoch  , validation_data=val_gen , validation_steps=200 ,  epochs=1 )
+			history = model.fit_generator( train_gen , steps_per_epoch  , validation_data=val_gen , validation_steps=200 ,  epochs=1 )
 			if not checkpoints_path is None:
 				model.save_weights( checkpoints_path + "." + str( ep )  )
 				print("saved " , checkpoints_path + ".model." + str( ep ) )
 			print("Finished Epoch" , ep )
+                    
 
+        with open('/trainHistoryDict', 'wb') as file_pi:
+                pickle.dump(history.history, file_pi)
 
 
 

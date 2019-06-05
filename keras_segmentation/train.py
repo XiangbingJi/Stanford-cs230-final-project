@@ -1,7 +1,9 @@
+import keras_metrics
 import argparse
 import json
 from .data_utils.data_loader import image_segmentation_generator , verify_segmentation_dataset
 from .models import model_from_name
+import tensorflow as tf
 import os
 import six
 
@@ -17,6 +19,21 @@ def find_latest_checkpoint( checkpoints_path ):
 		ep += 1
 
 
+
+def my_weighted_loss(onehot_labels, logits):
+    """scale loss based on class weights
+    """
+    # compute weights based on their frequencies
+    class_weights = [1., 500.] # set your class weights here
+    # computer weights based on onehot labels
+    weights = tf.reduce_sum(class_weights * onehot_labels, axis=-1)
+    # compute (unweighted) softmax cross entropy loss
+    unweighted_losses = tf.nn.softmax_cross_entropy_with_logits(labels=[onehot_labels], logits=[logits])
+    # apply the weights, relying on broadcasting of the multiplication
+    weighted_losses = unweighted_losses * weights
+    # reduce the result to get your final loss
+    loss = tf.reduce_mean(weighted_losses)
+    return loss
 
 
 def train( model  , 
@@ -60,9 +77,9 @@ def train( model  ,
 		assert not (  val_annotations is None ) 
 
 	if not optimizer_name is None:
-		model.compile(loss='categorical_crossentropy',
+		model.compile(loss=my_weighted_loss,
 			optimizer= optimizer_name ,
-			metrics=['accuracy'])
+			metrics=[keras_metrics.precision(), keras_metrics.recall()])
 
 	if not checkpoints_path is None:
 		open( checkpoints_path+"_config.json" , "w" ).write( json.dumps( {

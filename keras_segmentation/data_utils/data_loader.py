@@ -124,6 +124,8 @@ def image_segmentation_generator( images_path , segs_path ,  batch_size,  n_clas
 			im = cv2.imread(im , 1 )
 			seg = cv2.imread(seg , 1 )
 
+			seg = np.where(seg == 255, 1, 0)
+
 			if do_augment:
 				img , seg[:,:,0] = augment_seg( img , seg[:,:,0] )
 

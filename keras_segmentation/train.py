@@ -122,9 +122,6 @@ def train(model,
                 model.save_weights(checkpoints_path + "." + str(ep))
                 print("saved ", checkpoints_path + ".model." + str(ep))
             print("Finished Epoch", ep)
-            print("Saving history")
-            with open('/trainHistoryDict', 'wb') as file_pi:
-                pickle.dump(history.history, file_pi)
     else:
         for ep in range(epochs):
             print("Starting Epoch ", ep)
@@ -134,7 +131,6 @@ def train(model,
                 model.save_weights(checkpoints_path + "." + str(ep))
                 print("saved ", checkpoints_path + ".model." + str(ep))
             print("Finished Epoch", ep)
-
-            print("Saving history")
-            with open('/trainHistoryDict', 'wb') as file_pi:
-                pickle.dump(history.history, file_pi)
+            print("Saving history", history.history)
+            with open('./history.json', 'ab') as f:
+                pickle.dump(history.history, f)

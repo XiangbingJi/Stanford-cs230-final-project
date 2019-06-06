@@ -14,7 +14,6 @@ import json
 from .models.config import IMAGE_ORDERING
 from . import metrics
 from .models import model_from_name
-from .metrics import get_iou
 
 import six
 
@@ -58,7 +57,6 @@ def predict(model=None, inp=None, out_fname=None, checkpoints_path=None):
 
     x = get_image_arr(inp, input_width, input_height, odering=IMAGE_ORDERING)
     pr = model.predict(np.array([x]))[0]
-    print(get_iou(np.array([x]), pr, 2))
     pr = pr.reshape((output_height, output_width, n_classes)).argmax(axis=2)
 
     seg_img = np.zeros((output_height, output_width, 3))
@@ -104,8 +102,9 @@ def predict_multiple(model=None, inps=None, inp_dir=None, out_dir=None, checkpoi
     return all_prs
 
 
-def evaluate(model=None, inp_inmges=None, annotations=None, checkpoints_path=None):
-    assert False, "not implemented "
+def evaluate(model=None, inp_images=None, annotations=None, checkpoints_path=None):
+    if model is None and (not checkpoints_path is None):
+        model = model_from_checkpoint_path(checkpoints_path)
 
     ious = []
     for inp, ann in tqdm(zip(inp_images, annotations)):

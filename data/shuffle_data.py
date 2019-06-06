@@ -3,14 +3,15 @@ import os
 import random
 import shutil
 
-ORIGINAL_ROOT_DIR = "/Users/loujunjie/Desktop/processed_tu_simple_data/original_image/"
-ORIGINAL_TRAIN_DIR = "/Users/loujunjie/Desktop/processed_tu_simple_data/original_train/"
-ORIGINAL_DEV_DIR = "/Users/loujunjie/Desktop/processed_tu_simple_data/original_dev/"
-ORIGINAL_TEST_DIR = "/Users/loujunjie/Desktop/processed_tu_simple_data/original_test/"
-LABEL_ROOT_DIR = "/Users/loujunjie/Desktop/processed_tu_simple_data/label_image/"
-LABEL_TRAIN_DIR = "/Users/loujunjie/Desktop/processed_tu_simple_data/label_train/"
-LABEL_DEV_DIR = "/Users/loujunjie/Desktop/processed_tu_simple_data/label_dev/"
-LABEL_TEST_DIR = "/Users/loujunjie/Desktop/processed_tu_simple_data/label_test/"
+ROOT_DIR = "/Users/loujunjie/Desktop/processed_tu_simple_data/"
+ORIGINAL_ROOT_DIR = ROOT_DIR + "/original_image/"
+ORIGINAL_TRAIN_DIR = ROOT_DIR + "/original_train/"
+ORIGINAL_DEV_DIR = ROOT_DIR + "/original_dev/"
+ORIGINAL_TEST_DIR = ROOT_DIR + "/original_test/"
+LABEL_ROOT_DIR = ROOT_DIR + "/label_image/"
+LABEL_TRAIN_DIR = ROOT_DIR + "/label_train/"
+LABEL_DEV_DIR = ROOT_DIR + "/label_dev/"
+LABEL_TEST_DIR = ROOT_DIR + "/label_test/"
 
 def loop_directory_and_find_images(directory):
     test_data = []
@@ -30,7 +31,7 @@ def loop_directory_and_find_images(directory):
             elif (filename.startswith("clips_0313-2")):
                 no_suffix = filename.split('.')[0]
                 frame = no_suffix.split('_')[2]
-                if (frame <= 1800):
+                if (int(frame) <= 1800):
                     if (int(frame) / 5 % 10 == 0):
 #                         print filename
                         test_data.append(filename)
@@ -46,11 +47,11 @@ def loop_directory_and_find_images(directory):
     
     return test_data, rest
 
-def loop_directory_and_copy_images(directory, new_directory):
+def loop_directory_and_copy_images(directory, new_directory, data_set):
     for filename in os.listdir(directory):
         if os.path.isdir(os.path.join(directory, filename)):
             loop_directory(os.path.join(directory, filename))
-        elif filename in test_data:
+        elif filename in data_set:
             shutil.copy2(os.path.join(directory, filename), new_directory)
             print("Copied file ", filename, " to new directory ", new_directory)
             
@@ -76,16 +77,16 @@ if __name__ == '__main__':
     create_directory_if_not_exists(ORIGINAL_DEV_DIR)
     create_directory_if_not_exists(ORIGINAL_TEST_DIR)
     
-    loop_directory_and_copy_images(ORIGINAL_ROOT_DIR, ORIGINAL_TRAIN_DIR)
-    loop_directory_and_copy_images(ORIGINAL_ROOT_DIR, ORIGINAL_DEV_DIR)
-    loop_directory_and_copy_images(ORIGINAL_ROOT_DIR, ORIGINAL_TEST_DIR)
+    loop_directory_and_copy_images(ORIGINAL_ROOT_DIR, ORIGINAL_TRAIN_DIR, train_data)
+    loop_directory_and_copy_images(ORIGINAL_ROOT_DIR, ORIGINAL_DEV_DIR, dev_data)
+    loop_directory_and_copy_images(ORIGINAL_ROOT_DIR, ORIGINAL_TEST_DIR, test_data)
     
     create_directory_if_not_exists(LABEL_TRAIN_DIR)
     create_directory_if_not_exists(LABEL_DEV_DIR)
     create_directory_if_not_exists(LABEL_TEST_DIR)
     
-    loop_directory_and_copy_images(LABEL_ROOT_DIR, LABEL_TRAIN_DIR)
-    loop_directory_and_copy_images(LABEL_ROOT_DIR, LABEL_DEV_DIR)
-    loop_directory_and_copy_images(LABEL_ROOT_DIR, LABEL_TEST_DIR)
+    loop_directory_and_copy_images(LABEL_ROOT_DIR, LABEL_TRAIN_DIR, train_data)
+    loop_directory_and_copy_images(LABEL_ROOT_DIR, LABEL_DEV_DIR, dev_data)
+    loop_directory_and_copy_images(LABEL_ROOT_DIR, LABEL_TEST_DIR, test_data)
     
     

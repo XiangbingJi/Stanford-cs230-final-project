@@ -94,8 +94,8 @@ def cli_evaluate():
     args = parser.parse_args()
 
     assert not args.checkpoints_path is None
-    assert not args.predictions is None
-    assert not args.groudtruth is None
+    assert not args.test_images is None
+    assert not args.annotations is None
 
     predict.evaluate(inp_images=args.test_images, annotations=args.annotations, checkpoints_path=args.checkpoints_path)
 

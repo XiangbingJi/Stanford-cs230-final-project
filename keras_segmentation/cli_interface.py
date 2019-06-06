@@ -86,8 +86,8 @@ def cli_predict():
 def cli_evaluate():
     parser = argparse.ArgumentParser()
     parser.add_argument("command", type=str)
-    parser.add_argument("--predictions", type=str)
-    parser.add_argument("--groudtruth", type=str)
+    parser.add_argument("--test_images", type=str)
+    parser.add_argument("--annotations", type=str)
     parser.add_argument("--checkpoints_path", type=str)
     parser.add_argument("--output_path", type=str, default="")
 
@@ -97,7 +97,7 @@ def cli_evaluate():
     assert not args.predictions is None
     assert not args.groudtruth is None
 
-    predict.evaluate(inp_images=args.predictions, annotations=args.groudtruth, checkpoints_path=args.checkpoints_path)
+    predict.evaluate(inp_images=args.test_images, annotations=args.annotations, checkpoints_path=args.checkpoints_path)
 
 
 def cli_verify_dataset():

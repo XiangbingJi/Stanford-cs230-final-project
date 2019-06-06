@@ -3,7 +3,7 @@ import os
 import random
 import shutil
 
-ROOT_DIR = "/Users/loujunjie/Desktop/processed_tu_simple_data/"
+ROOT_DIR = "/home/ubuntu/data/processed_tuSimple_dataset"
 ORIGINAL_ROOT_DIR = ROOT_DIR + "/original_image/"
 ORIGINAL_TRAIN_DIR = ROOT_DIR + "/original_train/"
 ORIGINAL_DEV_DIR = ROOT_DIR + "/original_dev/"
@@ -19,7 +19,7 @@ def loop_directory_and_find_images(directory):
     for filename in os.listdir(directory):
         if os.path.isdir(os.path.join(directory, filename)):
             loop_directory(os.path.join(directory, filename))
-        elif filename.endswith(".jpg"):
+        elif filename.endswith(".png"):
             if (filename.startswith("clips_0313-1")):
                 no_suffix = filename.split('.')[0]
                 frame = no_suffix.split('_')[2]
@@ -64,8 +64,8 @@ def create_directory_if_not_exists(directory):
         
 if __name__ == '__main__':
     test_data, rest = loop_directory_and_find_images(ORIGINAL_ROOT_DIR)
-    print len(test_data)
-    print len(rest)
+    print (len(test_data))
+    print (len(rest))
 
     SEED = 1024
     random.seed(SEED)

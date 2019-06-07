@@ -3,12 +3,11 @@ import argparse
 from keras.models import load_model
 import glob
 import cv2
+import os
 import numpy as np
 import random
-import os
 from tqdm import tqdm
-from .train import find_latest_checkpoint
-import os
+from .train import find_latest_checkpoint 
 from .data_utils.data_loader import get_image_arr, get_segmentation_arr
 import json
 from .models.config import IMAGE_ORDERING
@@ -101,18 +100,34 @@ def predict_multiple(model=None, inps=None, inp_dir=None, out_dir=None, checkpoi
 
     return all_prs
 
-
-def evaluate(model=None, inp_images=None, annotations=None, checkpoints_path=None):
-    if model is None and (not checkpoints_path is None):
-        model = model_from_checkpoint_path(checkpoints_path)
-
+def evaluate(annots_dir=None, preds_dir=None):
+    images = None
+    annots = None
+    
+    if preds_dir is not None:
+        images = glob.glob(os.path.join(preds_dir, "*.jpg")) + glob.glob(os.path.join(preds_dir, "*.png")) + glob.glob(
+            os.path.join(preds_dir, "*.jpeg"))
+    
+    if annots_dir is not None:
+        annots = glob.glob(os.path.join(annots_dir, "*.jpg")) + glob.glob(os.path.join(annots_dir, "*.png")) + glob.glob(
+            os.path.join(annots_dir, "*.jpeg"))
+    
     ious = []
-    for inp, ann in tqdm(zip(inp_images, annotations)):
-        pr = predict(model, inp)
-        gt = get_segmentation_arr(ann, model.n_classes, model.output_width, model.output_height)
+    for inp, ann in tqdm(zip(images, annots)):
+        gt = get_segmentation_arr(ann, 2, 320, 192)
         gt = gt.argmax(-1)
-        iou = metrics.get_iou(gt, pr, model.n_classes)
+        pr = get_segmentation_arr(inp, 2, 320, 192)
+        pr = pr.argmax(-1)
+        if len(ious) == 0:
+            unique_elements, counts_elements = np.unique(gt, return_counts=True)
+            print("Frequency of unique values of gt array:")
+            print(np.asarray((unique_elements, counts_elements)))
+            unique_elements, counts_elements = np.unique(pr, return_counts=True)
+            print("Frequency of unique values of pr array:")
+            print(np.asarray((unique_elements, counts_elements)))
+        iou = metrics.get_iou(gt, pr, 2)
         ious.append(iou)
     ious = np.array(ious)
     print("Class wise IoU ", np.mean(ious, axis=0))
     print("Total  IoU ", np.mean(ious))
+

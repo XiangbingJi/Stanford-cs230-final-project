@@ -86,15 +86,17 @@ def cli_predict():
 def cli_evaluate():
     parser = argparse.ArgumentParser()
     parser.add_argument("command", type=str)
-    parser.add_argument("--preds_dir", type=str)
+    parser.add_argument("--images_dir", type=str)
     parser.add_argument("--annots_dir", type=str)
+    parser.add_argument("--checkpoints_path", type=str)
 
     args = parser.parse_args()
 
-    assert not args.preds_dir is None
-    assert not args.annots_dir is None
+    assert args.images_dir is not None
+    assert args.annots_dir is not None
+    assert args.checkpoints_path is not None
 
-    predict.evaluate(preds_dir=args.preds_dir, annots_dir=args.annots_dir)
+    predict.evaluate(images_dir=args.images_dir, annots_dir=args.annots_dir, checkpoints_path=args.checkpoints_path)
 
 
 def cli_verify_dataset():

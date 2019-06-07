@@ -100,13 +100,33 @@ def predict_multiple(model=None, inps=None, inp_dir=None, out_dir=None, checkpoi
 
     return all_prs
 
-def evaluate(annots_dir=None, preds_dir=None):
+
+def get_pr(model, inp):
+    if isinstance(inp, six.string_types):
+        inp = cv2.imread(inp)
+
+    assert len(inp.shape) == 3, "Image should be h,w,3 "
+
+    output_width = model.output_width
+    output_height = model.output_height
+    input_width = model.input_width
+    input_height = model.input_height
+    n_classes = model.n_classes
+
+    x = get_image_arr(inp, input_width, input_height, odering=IMAGE_ORDERING)
+    pr = model.predict(np.array([x]))[0]
+    return pr.reshape((output_height, output_width, n_classes)).argmax(axis=2)
+
+
+def evaluate(annots_dir=None, images_dir=None, checkpoints_path=None):
+    model = model_from_checkpoint_path(checkpoints_path)
+
     images = None
     annots = None
     
-    if preds_dir is not None:
-        images = glob.glob(os.path.join(preds_dir, "*.jpg")) + glob.glob(os.path.join(preds_dir, "*.png")) + glob.glob(
-            os.path.join(preds_dir, "*.jpeg"))
+    if images_dir is not None:
+        images = glob.glob(os.path.join(images_dir, "*.jpg")) + glob.glob(os.path.join(images_dir, "*.png")) + glob.glob(
+            os.path.join(images_dir, "*.jpeg"))
     
     if annots_dir is not None:
         annots = glob.glob(os.path.join(annots_dir, "*.jpg")) + glob.glob(os.path.join(annots_dir, "*.png")) + glob.glob(
@@ -116,16 +136,19 @@ def evaluate(annots_dir=None, preds_dir=None):
     for inp, ann in tqdm(zip(images, annots)):
         gt = get_segmentation_arr(ann, 2, 320, 192)
         gt = gt.argmax(-1)
-        pr = get_segmentation_arr(inp, 2, 320, 192)
+        pr = get_segmentation_arr(get_pr(model, inp), 2, 320, 192)
         pr = pr.argmax(-1)
-        if len(ious) == 0:
-            unique_elements, counts_elements = np.unique(gt, return_counts=True)
-            print("Frequency of unique values of gt array:")
-            print(np.asarray((unique_elements, counts_elements)))
-            unique_elements, counts_elements = np.unique(pr, return_counts=True)
-            print("Frequency of unique values of pr array:")
-            print(np.asarray((unique_elements, counts_elements)))
+
+        unique_elements, counts_elements = np.unique(gt, return_counts=True)
+        print("Frequency of unique values of gt array:")
+        print(np.asarray((unique_elements, counts_elements)))
+        unique_elements, counts_elements = np.unique(pr, return_counts=True)
+        print("Frequency of unique values of pr array:")
+        print(np.asarray((unique_elements, counts_elements)))
+
         iou = metrics.get_iou(gt, pr, 2)
+        print("IOU is " + str(iou))
+
         ious.append(iou)
     ious = np.array(ious)
     print("Class wise IoU ", np.mean(ious, axis=0))

@@ -1,7 +1,6 @@
 from PIL import Image
 import glob
 import argparse
-import natsort
 import os.path as path
 
 

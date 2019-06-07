@@ -106,18 +106,21 @@ def get_pr(model, inp):
     orininal_h = 192 
     orininal_w = 320
 
-    seg_img = predict(model, inp)
+    seg_img = predict(model, inp)#, out_fname=os.path.basename(inp))
+
+    print("predicted image size", seg_img.shape)
 
     unique_elements, counts_elements = np.unique(seg_img, return_counts=True)
     print("Frequency of unique values of pr array:")
     print(np.asarray((unique_elements, counts_elements)))
 
-    seg_img = np.stack((seg_img.astype('uint8'), seg_img.astype('uint8'), seg_img.astype('uint8')))
-    seg_img = np.reshape(seg_img, (96, 160, 3)) 
-    print('stack_seg_img size', seg_img.shape)
-    seg_img = cv2.resize(seg_img, (orininal_w, orininal_h))
+    seg_img = cv2.resize(seg_img, (orininal_w, orininal_h), interpolation=cv2.INTER_NEAREST)
+
+    seg_img = np.reshape(seg_img, (orininal_w * orininal_h))
+    print('stack seg img size after resize', seg_img.shape)
 
     return seg_img 
+
 
 def evaluate(annots_dir=None, images_dir=None, checkpoints_path=None):
     model = model_from_checkpoint_path(checkpoints_path)
@@ -137,20 +140,19 @@ def evaluate(annots_dir=None, images_dir=None, checkpoints_path=None):
     precisions = []
     recalls = []
     for inp, ann in tqdm(zip(images, annots)):
-        gt = get_segmentation_arr(ann, 2, 320, 192)
-        print('gt shape', gt.shape)
-        gt = gt.argmax(-1)
-        pr = get_segmentation_arr(get_pr(model, inp), 2, 320, 192)
-        pr = pr.argmax(-1)
-        print('pr shape', pr.shape)
 
-        unique_elements, counts_elements = np.unique(gt, return_counts=True)
-        print("Frequency of unique values of gt array:")
-        print(np.asarray((unique_elements, counts_elements)))
-
-        unique_elements, counts_elements = np.unique(pr, return_counts=True)
-        print("Frequency of unique values of pr array after resize:")
-        print(np.asarray((unique_elements, counts_elements)))
+        gt = get_seg(ann, 320, 192)
+        #print('gt shape', gt.shape)
+        pr = get_pr(model, inp)
+        #print('pr shape', pr.shape)
+        #
+        # unique_elements, counts_elements = np.unique(gt, return_counts=True)
+        # print("Frequency of unique values of gt array:")
+        # print(np.asarray((unique_elements, counts_elements)))
+        #
+        # unique_elements, counts_elements = np.unique(pr, return_counts=True)
+        # print("Frequency of unique values of pr array after resize:")
+        # print(np.asarray((unique_elements, counts_elements)))
         precision = metrics.get_precision(gt, pr, 2)
         iou = metrics.get_iou(gt, pr, 2)
         recall = metrics.get_recall(gt, pr, 2)
@@ -158,6 +160,7 @@ def evaluate(annots_dir=None, images_dir=None, checkpoints_path=None):
         ious.append(iou)
         precisions.append(precision)
         recalls.append(recall)
+        print(inp, iou, precision, recall)
     ious = np.array(ious)
     precisions = np.array(precisions)
     recalls = np.array(recalls)
@@ -167,5 +170,20 @@ def evaluate(annots_dir=None, images_dir=None, checkpoints_path=None):
     print("Total precision ", np.mean(precisions))
     print("Class wise recall ", np.mean(recalls, axis=0))
     print("Total recall", np.mean(recalls))
-    
 
+
+def get_seg(path, width, height):
+    seg_labels = np.zeros((height, width))
+
+    if type(path) is np.ndarray:
+        img = path
+    else:
+        img = cv2.imread(path, 1)
+        img = np.where(img > 128, 1, 0)
+        print("raw image size", img.shape)
+
+    img = img[:, :, 0]
+    seg_img = cv2.resize(img, (width, height), interpolation=cv2.INTER_NEAREST)
+
+    seg_img = np.reshape(seg_img, (width * height))
+    return seg_img

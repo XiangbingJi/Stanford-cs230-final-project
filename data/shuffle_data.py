@@ -3,7 +3,8 @@ import os
 import random
 import shutil
 
-ROOT_DIR = "/home/ubuntu/data/processed_tuSimple_dataset"
+#ROOT_DIR = "/home/ubuntu/data/processed_tuSimple_dataset"
+ROOT_DIR = "/home/ubuntu/data/copy-255/processed_tuSimple_dataset"
 ORIGINAL_ROOT_DIR = ROOT_DIR + "/original_image/"
 ORIGINAL_TRAIN_DIR = ROOT_DIR + "/original_train/"
 ORIGINAL_DEV_DIR = ROOT_DIR + "/original_dev/"

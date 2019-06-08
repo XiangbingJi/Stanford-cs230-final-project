@@ -5,12 +5,13 @@ from PIL import Image
 from resizeimage import resizeimage
 
 # directory = "/Users/loujunjie/Desktop/laneseg_label_w16/driver_161_90frame/06030819_0755.MP4/"
-ROOT_DIR = "/Users/loujunjie/Downloads/driver_161_90frame/06030819_0755.MP4/"
 # ROOT_DIR = "/Users/loujunjie/Downloads/driver_161_90frame/06030819_0755.MP4/"
+# ROOT_DIR = "/Users/loujunjie/Downloads/driver_161_90frame/06030819_0755.MP4/"
+ROOT_DIR = "/home/ubuntu/data/copy-255/processed_tuSimple_dataset/"
 
 # Resize to 1/5 of original size, keep same height/width ratio
-resize_width = 1640/5
-resize_height = 590/5
+resize_width = 320
+resize_height = 192
 
 def resize_image(image_parent_directory, image_filename):
 #     print image_parent_directory, image_filename
@@ -20,8 +21,10 @@ def resize_image(image_parent_directory, image_filename):
     # print image.size
     cover = resizeimage.resize_cover(image, [resize_width, resize_height])
     
-    resized_image_name = image_parent_directory + "/resized-" + image_filename
+    pixels = image.load() # create the pixel map
+
     cover.save(image_full_directory, image.format)
+    print("done resizing image " + image_filename)
     
 def loop_directory(directory):
     for filename in os.listdir(directory):

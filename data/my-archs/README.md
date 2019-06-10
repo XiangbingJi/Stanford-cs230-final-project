@@ -1,2 +1,3 @@
-Process with https://github.com/HarisIqbal88/PlotNeuralNet
+https://github.com/HarisIqbal88/PlotNeuralNet
+Run with customized pycore/
 

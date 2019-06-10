@@ -37,6 +37,26 @@ def my_weighted_loss(onehot_labels, logits):
     return loss
 
 
+def my_recall(actual, predicted):
+    TP = tf.count_nonzero(predicted * actual)
+    TN = tf.count_nonzero((predicted - 1) * (actual - 1))
+    FP = tf.count_nonzero(predicted * (actual - 1))
+    FN = tf.count_nonzero((predicted - 1) * actual)
+    return tf.divide(TP, TP + FN)
+
+def my_precision(actual, predicted):
+    TP = tf.count_nonzero(predicted * actual)
+    TN = tf.count_nonzero((predicted - 1) * (actual - 1))
+    FP = tf.count_nonzero(predicted * (actual - 1))
+    FN = tf.count_nonzero((predicted - 1) * actual)
+    return tf.divide(TP, TP + FP)
+
+def my_f1(actual, predicted):
+    recall = my_recall(actual, predicted)
+    precision = my_precision(actual, predicted)
+    return tf.divide(2 * precision * recall, precision + recall)
+
+
 def train(model,
           train_images,
           train_annotations,
@@ -77,7 +97,7 @@ def train(model,
     if not optimizer_name is None:
         model.compile(loss=my_weighted_loss,
                       optimizer=optimizer_name,
-                      metrics=[keras_metrics.precision(), keras_metrics.recall()])
+                      metrics=[keras_metrics.precision(), keras_metrics.recall(), my_recall, my_precision, my_f1])
 
     if not checkpoints_path is None:
         open(checkpoints_path + "_config.json", "w").write(json.dumps({
@@ -114,6 +134,7 @@ def train(model,
         val_gen = image_segmentation_generator(val_images, val_annotations, val_batch_size, n_classes, input_height,
                                                input_width, output_height, output_width)
 
+    print(model.summary())
     if not validate:
         for ep in range(epochs):
             print("Starting Epoch ", ep)
@@ -125,7 +146,7 @@ def train(model,
     else:
         for ep in range(epochs):
             print("Starting Epoch ", ep)
-            history = model.fit_generator(train_gen, steps_per_epoch, validation_data=val_gen, validation_steps=200,
+            history = model.fit_generator(train_gen, steps_per_epoch, validation_data=val_gen, validation_steps=12,
                                           epochs=1)
             if not checkpoints_path is None:
                 model.save_weights(checkpoints_path + "." + str(ep))

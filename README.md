@@ -36,5 +36,7 @@ Run ```python tools/evaluate.py YOUR_PRED_JSON_TXT GROUND_TRUTH_JSON_TXT```
 We randomly downloaded some freeway videos online (outside of our training/dev/text set) and ran our model on it. 
 ![](demo.gif)
 
+You can find complete video here: https://youtu.be/py-JNsGZ6_g
+
 
 We will start from the baseline mode and build our lane detection model. 
